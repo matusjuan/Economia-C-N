@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Economía</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#E0621F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Economía">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --panel:#FFFFFF; --ink:#271D14; --ink-soft:#6E6153;
+    --line:#E7DECF; --accent:#E0621F; --accent-dark:#B84B14; --accent-tint:#FCE4D3;
+    --egreso:#A23B2E; --egreso-tint:#F4DCD6;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .wrap{ width:100%; max-width:380px; }
+  .brand{ text-align:center; margin-bottom:28px; }
+  .brand .mark{ width:56px; height:56px; border-radius:14px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }
+  .brand h1{ font-family:'Lora',serif; font-size:23px; margin:0 0 4px; font-weight:600; }
+  .brand p{ margin:0; color:var(--ink-soft); font-size:13.5px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:26px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:500; color:var(--ink-soft); margin-bottom:5px; }
+  .field input{ width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:14px; background:#fff; color:var(--ink); }
+  .field input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint); }
+  button.primary{ all:unset; cursor:pointer; width:100%; text-align:center; background:var(--accent); color:#fff;
+    padding:11px; border-radius:9px; font-size:14px; font-weight:600; margin-top:4px; }
+  button.primary:hover{ background:var(--accent-dark); }
+  button.primary:disabled{ opacity:.6; cursor:default; }
+  .switch{ text-align:center; margin-top:16px; font-size:13px; color:var(--ink-soft); }
+  .switch a{ color:var(--accent); font-weight:600; cursor:pointer; text-decoration:none; }
+  .switch a:hover{ text-decoration:underline; }
+  .err{ background:var(--egreso-tint); color:#5B2E24; padding:9px 12px; border-radius:8px; font-size:12.5px;
+    margin-bottom:14px; display:none; }
+  .ok{ background:var(--accent-tint); color:#194028; padding:9px 12px; border-radius:8px; font-size:12.5px;
+    margin-bottom:14px; display:none; }
+  .setup{ margin-top:18px; font-size:11.5px; color:var(--ink-soft); text-align:center; line-height:1.6; }
+  .setup code{ background:var(--accent-tint); padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="mark">$</div>
+    <h1>Mi Economía</h1>
+    <p>Tus ingresos y gastos, en un solo lugar</p>
+  </div>
+  <div class="card">
+    <div id="errBox" class="err"></div>
+    <div id="okBox" class="ok"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="password" required autocomplete="current-password">
+      </div>
+      <button class="primary" type="submit" id="btnSubmit">Ingresar</button>
+    </form>
+
+    <div class="switch">
+      <span id="switchText">¿No tenés cuenta todavía?</span>
+      <a id="switchLink" onclick="toggleMode()">Crear cuenta</a>
+    </div>
+  </div>
+
+  <div class="setup" id="setupHint"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ============================================================
+// CONFIGURACIÓN: reemplazá estos dos valores por los de TU proyecto de Supabase
+// (Project Settings > API > Project URL / anon public key)
+// ============================================================
+const SUPABASE_URL = 'https://rztbzxuoncqevmhllmsr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_nQGfFH12TVtJjfxi0EURaw_T87CNAlh';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let mode = 'login'; // o 'signup'
+
+function showErr(msg){
+  const b = document.getElementById('errBox');
+  b.textContent = msg; b.style.display = 'block';
+  document.getElementById('okBox').style.display = 'none';
+}
+function showOk(msg){
+  const b = document.getElementById('okBox');
+  b.textContent = msg; b.style.display = 'block';
+  document.getElementById('errBox').style.display = 'none';
+}
+function clearMsgs(){
+  document.getElementById('errBox').style.display = 'none';
+  document.getElementById('okBox').style.display = 'none';
+}
+
+function toggleMode(){
+  clearMsgs();
+  mode = mode === 'login' ? 'signup' : 'login';
+  document.getElementById('btnSubmit').textContent = mode === 'login' ? 'Ingresar' : 'Crear cuenta';
+  document.getElementById('switchText').textContent = mode === 'login' ? '¿No tenés cuenta todavía?' : '¿Ya tenés cuenta?';
+  document.getElementById('switchLink').textContent = mode === 'login' ? 'Crear cuenta' : 'Ingresar';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  clearMsgs();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+
+  if(mode === 'login'){
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){ showErr(traducirError(error.message)); btn.disabled = false; return; }
+    window.location.href = 'app.html';
+  } else {
+    if(password.length < 6){ showErr('La contraseña debe tener al menos 6 caracteres.'); btn.disabled = false; return; }
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if(error){ showErr(traducirError(error.message)); btn.disabled = false; return; }
+    if(data.session){
+      // Confirmación de email desactivada: ya hay sesión, entra directo
+      window.location.href = 'app.html';
+    } else {
+      showOk('Cuenta creada. Revisá tu email para confirmar la cuenta y después ingresá.');
+      toggleMode();
+    }
+  }
+  btn.disabled = false;
+});
+
+function traducirError(msg){
+  if(/already registered/i.test(msg)) return 'Ese email ya tiene una cuenta creada. Probá ingresar.';
+  if(/invalid login/i.test(msg)) return 'Email o contraseña incorrectos.';
+  if(/password/i.test(msg)) return 'Revisá la contraseña (mínimo 6 caracteres).';
+  return msg;
+}
+
+async function checkSesionInicial(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session) window.location.href = 'app.html';
+}
+
+if(SUPABASE_URL.includes('PEGAR_TU')){
+  document.getElementById('setupHint').innerHTML =
+    '⚠️ Todavía falta configurar la conexión a la base de datos.<br>Editá <code>index.html</code> y <code>app.html</code>, reemplazando <code>https://rztbzxuoncqevmhllmsr.supabase.coL</code> y <code>sb_publishable_nQGfFH12TVtJjfxi0EURaw_T87CNAlh</code> por los datos de tu proyecto.';
+} else {
+  checkSesionInicial();
+}
+</script>
+</body>
+</html>
