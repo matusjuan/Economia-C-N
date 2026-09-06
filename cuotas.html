@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuotas · Mi Economía</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#E0621F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mi Economía">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --panel:#FFFFFF; --ink:#271D14; --ink-soft:#8A7C6C; --line:#EAE2D3;
+    --accent:#E0621F; --accent-dark:#B84B14; --accent-tint:#FCE4D3;
+    --ingreso:#2F7D5E; --ingreso-tint:#DFEFE7;
+    --egreso:#A23B2E; --egreso-tint:#F4DCD6;
+    --gray:#6E6153; --gray-tint:#EFEAE1;
+    --shadow:0 2px 14px rgba(90,60,30,.07);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; font-size:14px; line-height:1.5; }
+  h1,h2,h3,.brand{ font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em; }
+
+  .topnav{ position:sticky; top:0; z-index:60; display:flex; align-items:center;
+    padding:14px 32px; background:rgba(247,244,238,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); gap:24px; flex-wrap:wrap; }
+  .brand{ font-size:18px; display:flex; align-items:center; gap:9px; color:var(--ink); white-space:nowrap; order:1; }
+  .brand .mark{ width:26px; height:26px; border-radius:50%; background:var(--egreso); color:#fff; display:flex; align-items:center;
+    justify-content:center; font-size:13px; font-family:'Inter'; font-weight:700; flex-shrink:0; }
+  .nav{ display:flex; gap:4px; flex-wrap:wrap; order:2; flex:1 1 auto; min-width:0; }
+  .nav button{ all:unset; cursor:pointer; padding:7px 3px; margin-right:18px; font-size:13.5px; color:var(--ink-soft); font-weight:500;
+    border-bottom:2px solid transparent; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+  .nav button:hover{ color:var(--ink); }
+  .nav button.active{ color:var(--egreso); border-bottom-color:var(--egreso); font-weight:600; }
+  .topnav-right{ display:flex; align-items:center; gap:14px; order:3; margin-left:auto; }
+  .navlink{ all:unset; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink-soft); border:1px solid var(--line);
+    background:#fff; padding:8px 14px; border-radius:999px; }
+  .navlink:hover{ background:var(--gray-tint); }
+  .btn-salir{ all:unset; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--egreso); border:1px solid var(--egreso-tint);
+    background:var(--egreso-tint); padding:8px 15px; border-radius:999px; }
+  .btn-salir:hover{ background:#EAC8C1; }
+
+  .main{ flex:1 1 auto; min-width:0; padding:30px 40px 60px; width:100%; max-width:1500px; margin:0 auto; }
+  .pagehead{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+  .pagehead h1{ font-size:23px; margin:0 0 4px; }
+  .pagehead p{ margin:0; color:var(--ink-soft); font-size:13px; }
+  .filters{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .filters select{ padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:13px; color:var(--ink); font-family:'Inter'; }
+
+  button.primary{ all:unset; cursor:pointer; background:var(--egreso); color:#fff; padding:10px 18px; border-radius:999px; font-size:13.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
+  button.primary:hover{ background:#7E2F24; }
+  button.ghost{ all:unset; cursor:pointer; padding:8px 14px; border-radius:999px; font-size:12.5px; color:var(--ink-soft); border:1px solid var(--line); background:#fff; }
+  button.ghost:hover{ background:var(--accent-tint); color:var(--ink); }
+
+  .card{ background:var(--panel); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
+  .grid2{ display:grid; grid-template-columns:1.2fr 1fr; gap:18px; align-items:start; }
+  @media(max-width:1000px){ .grid2{ grid-template-columns:1fr; } }
+
+  .aviso{ display:flex; align-items:center; gap:14px; padding:16px 18px; border-bottom:1px solid var(--line); }
+  .aviso:last-child{ border-bottom:none; }
+  .aviso .icon{ width:38px; height:38px; border-radius:50%; background:var(--egreso-tint); color:var(--egreso); display:flex;
+    align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .aviso.favor .icon{ background:var(--ingreso-tint); color:var(--ingreso); }
+  .aviso .txt{ flex:1; font-size:13.5px; }
+  .aviso .txt b{ font-family:'Fraunces',serif; }
+  .aviso .monto{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; }
+  .aviso.favor .monto{ color:var(--ingreso); }
+  .aviso.contra .monto{ color:var(--egreso); }
+
+  .stat{ background:var(--panel); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); }
+  .stat .lbl{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .stat .val{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; }
+
+  table{ width:100%; border-collapse:collapse; }
+  th{ text-align:left; font-size:11px; color:var(--ink-soft); font-weight:600; letter-spacing:.02em; padding:12px 18px; border-bottom:2px solid var(--ink); }
+  td{ padding:12px 18px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:#FBF4EC; }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .tag{ display:inline-flex; align-items:center; gap:5px; padding:3px 11px; border-radius:999px; font-size:12px; font-weight:500; }
+  .tag-otro{ background:var(--egreso-tint); color:#5B2E24; }
+  .tag-propio{ background:var(--gray-tint); color:var(--gray); }
+  .actions button{ all:unset; cursor:pointer; color:var(--ink-soft); font-size:12px; margin-left:10px; }
+  .actions button:hover{ color:var(--ink); text-decoration:underline; }
+  .empty{ padding:46px 16px; text-align:center; color:var(--ink-soft); }
+  .empty b{ display:block; color:var(--ink); font-size:15px; margin-bottom:5px; font-family:'Fraunces',serif; }
+
+  .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; overflow-x:auto; }
+  .tabs button{ all:unset; cursor:pointer; padding:8px 16px; border-radius:999px; font-size:13px; font-weight:500; color:var(--ink-soft); border:1px solid var(--line); background:#fff; white-space:nowrap; }
+  .tabs button.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  .toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+
+  .progress{ background:var(--gray-tint); border-radius:5px; height:7px; overflow:hidden; width:70px; display:inline-block; vertical-align:middle; margin-right:8px; }
+  .progress-fill{ height:100%; background:var(--egreso); border-radius:5px; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(30,20,10,.4); display:none; align-items:flex-start; justify-content:center; padding-top:6vh; z-index:100; backdrop-filter:blur(2px); }
+  .overlay.show{ display:flex; }
+  .modal{ background:#fff; border-radius:18px; width:440px; max-width:92vw; padding:26px; box-shadow:0 24px 48px rgba(40,25,10,.18); max-height:88vh; overflow:auto; }
+  .modal h3{ margin:0 0 16px; font-size:18px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; font-weight:500; color:var(--ink-soft); margin-bottom:5px; }
+  .money-input{ position:relative; }
+  .money-input .prefix{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-size:13.5px; pointer-events:none; }
+  .money-input input{ padding-left:30px !important; }
+  .field input, .field select{ width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--line); font-family:'Inter'; font-size:13.5px; background:#fff; color:var(--ink); }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--egreso); box-shadow:0 0 0 3px var(--egreso-tint); }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .modal-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+  .err{ color:var(--egreso); font-size:12px; margin-top:6px; display:none; font-weight:500; }
+  .hint{ font-size:11.5px; color:var(--ink-soft); margin-top:4px; }
+
+  .toast{ position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 18px; border-radius:999px; font-size:13px; box-shadow:0 8px 20px rgba(0,0,0,.2); opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none; z-index:200; }
+  .toast.show{ opacity:1; transform:translateY(0); }
+
+  @media(max-width:760px){
+    .topnav{ padding:10px 14px; gap:8px 10px; }
+    .brand{ font-size:16px; order:1; }
+    .nav{ order:3; flex:1 1 100%; width:100%; overflow-x:auto; flex-wrap:nowrap; gap:2px; padding-bottom:2px; }
+    .nav button{ margin-right:14px; white-space:nowrap; font-size:13px; }
+    .topnav-right{ order:2; margin-left:auto; gap:6px; }
+    .navlink{ padding:6px 9px; }
+    .navlink .lbl{ display:none; }
+    .btn-salir{ padding:7px 12px; font-size:11.5px; }
+    .main{ padding:16px 14px 50px; max-width:100%; }
+    .pagehead h1{ font-size:19px; }
+    table{ min-width:520px; }
+    .table-scroll{ overflow-x:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="brand"><span class="mark">💳</span> Cuotas</div>
+  <div class="nav" id="nav">
+    <button data-view="resumen" onclick="setView('resumen')">Resumen</button>
+    <button data-view="compras" onclick="setView('compras')">Compras</button>
+  </div>
+  <div class="topnav-right">
+    <a class="navlink" href="app.html">📊<span class="lbl"> Economía</span></a>
+    <a class="navlink" href="inicio.html">🏠<span class="lbl"> Inicio</span></a>
+    <button class="btn-salir" onclick="logout()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="pagehead">
+    <div>
+      <h1 id="viewTitle">Resumen</h1>
+      <p id="viewSub"></p>
+    </div>
+    <div class="filters" id="filtersBar"></div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://rztbzxuoncqevmhllmsr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_nQGfFH12TVtJjfxi0EURaw_T87CNAlh';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let state = {
+  user:null, miPersona:null, personas:[], tarjetas:[], compras:[],
+  view:'resumen', tarjetaSel:null,
+  year: new Date().getFullYear(), month: new Date().getMonth()+1
+};
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ window.location.href='index.html'; return; }
+  state.user = session.user;
+  await load();
+  render();
+}
+
+async function load(){
+  const [perRes, tarRes, comRes] = await Promise.allSettled([
+    sb.from('personas').select('*').order('orden'),
+    sb.from('tarjetas').select('*').order('orden'),
+    sb.from('compras').select('*').order('fecha_compra', { ascending:false })
+  ]);
+  state.personas = perRes.status==='fulfilled' ? (perRes.value.data||[]) : [];
+  state.tarjetas = tarRes.status==='fulfilled' ? (tarRes.value.data||[]) : [];
+  state.compras = comRes.status==='fulfilled' ? (comRes.value.data||[]) : [];
+  state.miPersona = state.personas.find(p=>p.user_id===state.user.id) || null;
+  if(!state.tarjetaSel && state.tarjetas.length) state.tarjetaSel = state.tarjetas.filter(t=>t.activa!==false)[0]?.id;
+
+  const errores = [perRes,tarRes,comRes].filter(r=>r.status==='rejected' || r.value?.error);
+  if(errores.length){ console.error('Errores cargando cuotas:', errores); toast('Hubo un problema cargando datos.'); }
+}
+
+async function logout(){ await sb.auth.signOut(); window.location.href='index.html'; }
+
+function setView(v){ state.view=v; render(); }
+function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function money(n){ return (n<0?'-':'') + '$' + Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function formatearInputMoneda(el){
+  el.addEventListener('input', ()=>{
+    let raw = el.value.replace(/[^\d,]/g,'');
+    const partes = raw.split(',');
+    let ent = partes[0].replace(/^0+(?=\d)/,'') || '0';
+    let dec = partes.length>1 ? partes.slice(1).join('').slice(0,2) : undefined;
+    const entFmt = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    el.value = dec!==undefined ? entFmt+','+dec : entFmt;
+  });
+}
+function valorMoneda(el){
+  const raw = (el.value||'').replace(/\./g,'').replace(',', '.');
+  return Number(raw)||0;
+}
+function setValorMoneda(el, n){
+  el.value = n ? Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+}
+function personaNombre(id){ return state.personas.find(p=>p.id===id)?.nombre || '—'; }
+function tarjetaNombre(id){ return state.tarjetas.find(t=>t.id===id)?.nombre || '—'; }
+
+// ---------- cálculo de cuotas ----------
+function estadoCompra(c, anio, mes){
+  // mes: 1-12. Devuelve {cuotaActual, activa, cuotaMensual} para el período (anio,mes)
+  const [fy, fm] = c.fecha_compra.split('-').map(Number);
+  const mesesPasados = (anio - fy)*12 + (mes - fm);
+  const cuotaMensual = c.monto_total / c.cuotas_totales;
+  const activa = mesesPasados >= 0 && mesesPasados < c.cuotas_totales;
+  return { cuotaActual: mesesPasados+1, activa, cuotaMensual, restante: c.cuotas_totales - (mesesPasados+1) };
+}
+
+function comprasDelPeriodo(){
+  // Si month=0 (todo el año), consideramos "activa en algún mes de ese año"
+  return state.compras.map(c=>{
+    if(state.month===0){
+      // activa si algún mes del año seleccionado cae dentro del rango de cuotas
+      const [fy,fm] = c.fecha_compra.split('-').map(Number);
+      const inicio = fy*12+fm, fin = fy*12+fm + c.cuotas_totales - 1;
+      const desde = state.year*12+1, hasta = state.year*12+12;
+      const activaEnElAnio = inicio <= hasta && fin >= desde;
+      const cuotaMensual = c.monto_total / c.cuotas_totales;
+      // cuántos meses de este año caen dentro del rango de cuotas (para sumar el total anual correcto)
+      let mesesEsteAnio = 0;
+      for(let m=1;m<=12;m++){ const e = estadoCompra(c, state.year, m); if(e.activa) mesesEsteAnio++; }
+      return { compra:c, activa:activaEnElAnio, cuotaMensual, montoPeriodo: cuotaMensual*mesesEsteAnio };
+    }
+    const e = estadoCompra(c, state.year, state.month);
+    return { compra:c, activa:e.activa, cuotaMensual:e.cuotaMensual, montoPeriodo:e.activa?e.cuotaMensual:0, cuotaActual:e.cuotaActual, restante:e.restante };
+  });
+}
+
+function yearsDisponibles(){
+  const ys = new Set(state.compras.map(c=>Number(c.fecha_compra.split('-')[0])));
+  ys.add(new Date().getFullYear());
+  return Array.from(ys).sort((a,b)=>b-a);
+}
+function labelPeriodo(){
+  return state.month ? `${MESES[state.month-1]} ${state.year}` : `Todo ${state.year}`;
+}
+function irAlMesActual(){ state.month=new Date().getMonth()+1; state.year=new Date().getFullYear(); render(); }
+function irATodoElAnio(){ state.month=0; render(); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ---------- render dispatcher ----------
+function render(){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
+  renderFiltersBar();
+  const titles = {
+    resumen:['Resumen','Quién le debe a quién este período'],
+    compras:['Compras','Cargá y revisá las compras en cuotas por tarjeta'],
+  };
+  document.getElementById('viewTitle').textContent = titles[state.view][0];
+  document.getElementById('viewSub').textContent = titles[state.view][1];
+  const c = document.getElementById('content');
+  if(state.view==='resumen') c.innerHTML = renderResumen();
+  else if(state.view==='compras') c.innerHTML = renderCompras();
+}
+
+function renderFiltersBar(){
+  const bar = document.getElementById('filtersBar');
+  const years = yearsDisponibles();
+  bar.innerHTML = `
+    <button class="ghost" style="${state.month===new Date().getMonth()+1 && state.year===new Date().getFullYear()?'background:var(--accent-tint);color:var(--accent-dark);border-color:var(--accent-tint);':''}" onclick="irAlMesActual()">Actual</button>
+    <button class="ghost" style="${state.month===0?'background:var(--accent-tint);color:var(--accent-dark);border-color:var(--accent-tint);':''}" onclick="irATodoElAnio()">Todo el año</button>
+    <select onchange="state.month=Number(this.value); render();">
+      <option value="0" ${state.month===0?'selected':''}>Todo el año</option>
+      ${MESES.map((m,i)=>`<option value="${i+1}" ${state.month===i+1?'selected':''}>${m}</option>`).join('')}
+    </select>
+    <select onchange="state.year=Number(this.value); render();">
+      ${years.map(y=>`<option value="${y}" ${y===state.year?'selected':''}>${y}</option>`).join('')}
+    </select>
+  `;
+}
+
+// ---------- RESUMEN ----------
+function renderResumen(){
+  const items = comprasDelPeriodo().filter(x=>x.activa);
+  // Agrupar por (dueño, titular) cuando son distintos -> hay deuda
+  const deudas = {}; // key: dueno_id|titular_id -> monto
+  let totalCuotasMes = 0;
+  items.forEach(({compra,montoPeriodo})=>{
+    totalCuotasMes += montoPeriodo;
+    const t = state.tarjetas.find(x=>x.id===compra.tarjeta_id);
+    if(!t) return;
+    if(compra.dueno_persona_id !== t.titular_persona_id){
+      const key = compra.dueno_persona_id+'|'+t.titular_persona_id;
+      deudas[key] = (deudas[key]||0) + montoPeriodo;
+    }
+  });
+
+  const avisos = Object.entries(deudas).map(([key,monto])=>{
+    const [duenoId, titularId] = key.split('|').map(Number);
+    const dueno = personaNombre(duenoId), titular = personaNombre(titularId);
+    // ¿Sos vos el titular (te deben) o sos vos el dueño (debés)?
+    const sosTitular = state.miPersona && state.miPersona.id===titularId;
+    const sosDueno = state.miPersona && state.miPersona.id===duenoId;
+    let texto, clase;
+    if(sosTitular){ texto = `<b>${esc(dueno)}</b> te debe`; clase='favor'; }
+    else if(sosDueno){ texto = `Le debés a <b>${esc(titular)}</b>`; clase='contra'; }
+    else { texto = `<b>${esc(dueno)}</b> le debe a <b>${esc(titular)}</b>`; clase='favor'; }
+    return { texto, monto, clase };
+  }).sort((a,b)=>b.monto-a.monto);
+
+  const avisosHtml = avisos.length ? avisos.map(a=>`
+    <div class="aviso ${a.clase}">
+      <div class="icon">${a.clase==='favor'?'↙️':'↗️'}</div>
+      <div class="txt">${a.texto}</div>
+      <div class="monto">${money(a.monto)}</div>
+    </div>`).join('') : `<div class="empty"><b>Sin deudas pendientes</b>Todas las cuotas de este período son tuyas.</div>`;
+
+  // resumen por tarjeta
+  const porTarjeta = {};
+  items.forEach(({compra,montoPeriodo})=>{ porTarjeta[compra.tarjeta_id] = (porTarjeta[compra.tarjeta_id]||0)+montoPeriodo; });
+  const filasTarjeta = state.tarjetas.map(t=>`
+    <div class="stat">
+      <div class="lbl">${esc(t.nombre)}</div>
+      <div class="val">${money(porTarjeta[t.id]||0)}</div>
+    </div>`).join('');
+
+  return `
+    <div class="card" style="margin-bottom:18px;">${avisosHtml}</div>
+    <div class="stat" style="margin-bottom:18px;">
+      <div class="lbl">Total en cuotas · ${labelPeriodo()}</div>
+      <div class="val">${money(totalCuotasMes)}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">${filasTarjeta}</div>
+  `;
+}
+
+// ---------- COMPRAS ----------
+function setTarjeta(id){ state.tarjetaSel = id; render(); }
+function renderCompras(){
+  const tabs = state.tarjetas.filter(t=>t.activa!==false || t.id===state.tarjetaSel).map(t=>
+    `<button class="${state.tarjetaSel===t.id?'active':''}" onclick="setTarjeta(${t.id})">${esc(t.nombre)}</button>`).join('');
+
+  const tarjeta = state.tarjetas.find(t=>t.id===state.tarjetaSel);
+  const lista = comprasDelPeriodo().filter(x=>x.compra.tarjeta_id===state.tarjetaSel);
+  const totalTarjeta = lista.filter(x=>x.activa).reduce((a,x)=>a+x.montoPeriodo,0);
+
+  const rows = lista.map(({compra,activa,cuotaActual,restante,cuotaMensual})=>{
+    const esOtro = tarjeta && compra.dueno_persona_id !== tarjeta.titular_persona_id;
+    return `<tr style="${activa?'':'opacity:.45;'}">
+      <td>${compra.fecha_compra.split('-').reverse().join('/')}</td>
+      <td>${esc(compra.nombre)} ${esOtro?`<span class="tag tag-otro">${esc(personaNombre(compra.dueno_persona_id))}</span>`:''}</td>
+      <td>${cuotaActual>0?cuotaActual:'-'}/${compra.cuotas_totales}</td>
+      <td class="num">${money(cuotaMensual)}</td>
+      <td class="num">${money(compra.monto_total)}</td>
+      <td class="actions"><button onclick="editCompra(${compra.id})">Editar</button><button onclick="delCompra(${compra.id})">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="tabs">${tabs}</div>
+    <div class="toolbar">
+      <div style="font-size:13px;color:var(--ink-soft)">Total cuotas activas · ${labelPeriodo()}: <b style="color:var(--ink)">${money(totalTarjeta)}</b></div>
+      <button class="primary" onclick="compraForm()">+ Nueva compra</button>
+    </div>
+    <div class="card">
+      ${lista.length ? `<div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Compra</th><th>Cuota</th><th style="text-align:right">Cuota mensual</th><th style="text-align:right">Total</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+        : `<div class="empty"><b>Sin compras</b>Agregá la primera compra en cuotas de ${tarjeta?esc(tarjeta.nombre):''}.</div>`}
+    </div>
+  `;
+}
+
+function compraForm(existing){
+  const tarjeta = state.tarjetas.find(t=>t.id===(existing?.tarjeta_id ?? state.tarjetaSel));
+  const isEdit = !!existing;
+  const fecha = existing?.fecha_compra || new Date().toISOString().slice(0,10);
+  openModal(`
+    <h3>${isEdit?'Editar':'Nueva'} compra</h3>
+    <div class="field">
+      <label>Tarjeta</label>
+      <select id="cTarjeta">
+        ${state.tarjetas.filter(t=>t.activa!==false || t.id===tarjeta?.id).map(t=>`<option value="${t.id}" ${t.id===tarjeta?.id?'selected':''}>${esc(t.nombre)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Nombre de la compra</label><input type="text" id="cNombre" value="${esc(existing?.nombre||'')}" placeholder="Ej: Heladera"></div>
+    <div class="row2">
+      <div class="field"><label>Fecha de la 1ª cuota</label><input type="date" id="cFecha" value="${fecha}"></div>
+      <div class="field"><label>Cantidad de cuotas</label><input type="number" min="1" id="cCuotas" value="${existing?.cuotas_totales||1}"></div>
+    </div>
+    <div class="field"><label>Monto TOTAL de la compra</label>
+      <div class="money-input">
+        <span class="prefix">$</span>
+        <input type="text" inputmode="decimal" id="cMontoTotal" placeholder="0,00">
+      </div>
+    </div>
+    <div class="hint" id="cCalculo"></div>
+    <div class="field" style="margin-top:14px;">
+      <label>¿A quién le corresponde esta compra?</label>
+      <select id="cDueno">
+        ${state.personas.map(p=>`<option value="${p.id}" ${ (existing?.dueno_persona_id ?? tarjeta?.titular_persona_id)===p.id?'selected':''}>${esc(p.nombre)}</option>`).join('')}
+      </select>
+      <div class="hint">Si no es la persona titular de la tarjeta, va a aparecer como un aviso de deuda en Resumen.</div>
+    </div>
+    <div class="err" id="cErr"></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="ghost" onclick="delCompra(${existing.id})">Eliminar</button>` : `<span></span>`}
+      <div style="display:flex;gap:8px;">
+        <button class="ghost" onclick="closeModal()">Cancelar</button>
+        <button class="primary" onclick="saveCompra(${isEdit?existing.id:'null'})">Guardar</button>
+      </div>
+    </div>
+  `);
+  const inputMonto = document.getElementById('cMontoTotal');
+  formatearInputMoneda(inputMonto);
+  setValorMoneda(inputMonto, existing?.monto_total);
+  const actualizarCalculo = ()=>{
+    const total = valorMoneda(inputMonto);
+    const cuotas = Number(document.getElementById('cCuotas').value)||1;
+    document.getElementById('cCalculo').textContent = cuotas>0 ? `Cada cuota: ${money(total/cuotas)}` : '';
+  };
+  inputMonto.addEventListener('input', actualizarCalculo);
+  document.getElementById('cCuotas').addEventListener('input', actualizarCalculo);
+  actualizarCalculo();
+}
+function editCompra(id){ compraForm(state.compras.find(c=>c.id===id)); }
+async function saveCompra(id){
+  const tarjeta_id = Number(document.getElementById('cTarjeta').value);
+  const nombre = document.getElementById('cNombre').value.trim();
+  const fecha_compra = document.getElementById('cFecha').value;
+  const cuotas_totales = Number(document.getElementById('cCuotas').value);
+  const monto_total = valorMoneda(document.getElementById('cMontoTotal'));
+  const dueno_persona_id = Number(document.getElementById('cDueno').value);
+  const errBox = document.getElementById('cErr');
+  if(!nombre || !fecha_compra || !cuotas_totales || !monto_total){
+    errBox.textContent = 'Completá todos los campos.'; errBox.style.display='block'; return;
+  }
+  const data = { tarjeta_id, nombre, fecha_compra, cuotas_totales, monto_total, dueno_persona_id, creado_por: state.user.id };
+  const { error } = id ? await sb.from('compras').update(data).eq('id', id) : await sb.from('compras').insert(data);
+  if(error){ errBox.textContent = error.message; errBox.style.display='block'; return; }
+  closeModal(); toast(id?'Compra actualizada':'Compra agregada');
+  await load(); render();
+}
+async function delCompra(id){
+  const ok = await confirmDialog('¿Eliminar esta compra?');
+  if(!ok) return;
+  await sb.from('compras').delete().eq('id', id);
+  closeModal(); toast('Compra eliminada');
+  await load(); render();
+}
+
+// ---------- modal / confirm ----------
+function openModal(html){ document.getElementById('modalBody').innerHTML = html; document.getElementById('overlay').classList.add('show'); }
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+function confirmDialog(mensaje){
+  return new Promise(resolve=>{
+    openModal(`
+      <h3>Confirmar</h3>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin:0 0 4px;">${esc(mensaje)}</p>
+      <div class="modal-actions">
+        <span></span>
+        <div style="display:flex;gap:8px;">
+          <button class="ghost" id="confNo">Cancelar</button>
+          <button class="primary" id="confSi">Eliminar</button>
+        </div>
+      </div>
+    `);
+    document.getElementById('confNo').onclick = ()=>{ closeModal(); resolve(false); };
+    document.getElementById('confSi').onclick = ()=>{ resolve(true); };
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
